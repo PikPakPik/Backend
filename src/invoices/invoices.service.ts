@@ -10,24 +10,36 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class InvoicesService {
   constructor(
-    @InjectRepository(Invoice) private readonly invoiceRepository: Repository<Invoice>,
-    @InjectRepository(InvoiceProduct) private readonly invoiceProductRepository: Repository<InvoiceProduct>,
+    @InjectRepository(Invoice)
+    private readonly invoiceRepository: Repository<Invoice>,
+    @InjectRepository(InvoiceProduct)
+    private readonly invoiceProductRepository: Repository<InvoiceProduct>,
     @InjectRepository(User) private readonly userRepository: Repository<User>,
-    @InjectRepository(Product) private readonly productRepository: Repository<Product>,
-    
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>,
   ) {}
 
   // Create an invoice
-  async createInvoice(userId: number, products: { productId: number; quantity: number }[], status: string): Promise<Invoice> {
+  async createInvoice(
+    userId: number,
+    products: { productId: number; quantity: number }[],
+    status: string,
+  ): Promise<Invoice> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
 
     const invoiceProducts: InvoiceProduct[] = [];
     for (const { productId, quantity } of products) {
-      const product = await this.productRepository.findOne({ where: { id: productId } });
-      if (!product) throw new NotFoundException(`Product with ID ${productId} not found`);
+      const product = await this.productRepository.findOne({
+        where: { id: productId },
+      });
+      if (!product)
+        throw new NotFoundException(`Product with ID ${productId} not found`);
 
-      const invoiceProduct = this.invoiceProductRepository.create({ product, quantity });
+      const invoiceProduct = this.invoiceProductRepository.create({
+        product,
+        quantity,
+      });
       invoiceProducts.push(invoiceProduct);
     }
 
@@ -48,7 +60,10 @@ export class InvoicesService {
       relations: ['user', 'invoiceProducts', 'invoiceProducts.product'],
     });
 
-    if (!invoice) throw new NotFoundException(`Invoice with order number ${orderNumber} not found`);
+    if (!invoice)
+      throw new NotFoundException(
+        `Invoice with order number ${orderNumber} not found`,
+      );
 
     return invoice;
   }
@@ -59,28 +74,33 @@ export class InvoicesService {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
   }
-  
-  async updateInvoice(id: number, updateData: Partial<Invoice>): Promise<Invoice> {
+
+  async updateInvoice(
+    id: number,
+    updateData: Partial<Invoice>,
+  ): Promise<Invoice> {
     const invoice = await this.invoiceRepository.findOneBy({ id });
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
-  
+
     Object.assign(invoice, updateData);
     return this.invoiceRepository.save(invoice);
   }
 
-  async patchInvoice(id: number, updateData: Partial<Invoice>): Promise<Invoice> {
+  async patchInvoice(
+    id: number,
+    updateData: Partial<Invoice>,
+  ): Promise<Invoice> {
     const invoice = await this.invoiceRepository.findOneBy({ id });
     if (!invoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
-  
+
     Object.assign(invoice, updateData);
     return this.invoiceRepository.save(invoice);
   }
-  
-  
+
   // Get all invoices
   async getAllInvoices(): Promise<Invoice[]> {
     return this.invoiceRepository.find({
@@ -108,11 +128,13 @@ export class InvoicesService {
       where: { user: { id: userId } },
       relations: ['invoiceProducts', 'invoiceProducts.product'],
     });
-  
+
     if (!invoices.length) {
-      throw new NotFoundException(`No purchase history found for user with ID ${userId}`);
+      throw new NotFoundException(
+        `No purchase history found for user with ID ${userId}`,
+      );
     }
-  
+
     // Map products from all invoices into a single list
     const products = invoices.flatMap((invoice) =>
       invoice.invoiceProducts.map((invoiceProduct) => ({
@@ -126,14 +148,18 @@ export class InvoicesService {
         date: invoice.date,
       })),
     );
-  
+
     return products;
   }
   async getUserInvoices(userId: number): Promise<any> {
     // Fetch the user with related invoices and products
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['invoices', 'invoices.invoiceProducts', 'invoices.invoiceProducts.product'],
+      relations: [
+        'invoices',
+        'invoices.invoiceProducts',
+        'invoices.invoiceProducts.product',
+      ],
     });
 
     if (!user) {
@@ -146,8 +172,18 @@ export class InvoicesService {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        billingAddress: user.billingAddress,
-        homeAddress: user.homeAddress,
+        billingAddress: user.billingDetails.map((billingDetail) => ({
+          address: billingDetail.address,
+          city: billingDetail.city,
+          zipCode: billingDetail.zipCode,
+          country: billingDetail.country,
+        })),
+        homeAddress: user.billingDetails.map((billingDetail) => ({
+          address: billingDetail.address,
+          city: billingDetail.city,
+          zipCode: billingDetail.zipCode,
+          country: billingDetail.country,
+        })),
       },
       invoices: user.invoices.map((invoice) => ({
         id: invoice.id,

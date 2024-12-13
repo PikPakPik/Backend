@@ -1,9 +1,24 @@
-import { Controller, Get,Patch, Post, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  ClassSerializerInterceptor,
+  UseInterceptors,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../identity/jwt-auth.guard';
 import { User } from './user.entity';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('users')
+@ApiBearerAuth()
+@UseInterceptors(ClassSerializerInterceptor)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -15,17 +30,15 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @Get(':id')
-  async getUserById(@Param('id') id: number): Promise<Omit<User, 'password'>> {
-    const user = await this.usersService.getUserById(id);
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+  async getUserById(@Param('id') id: number): Promise<User> {
+    return this.usersService.getUserById(id);
   }
 
   @Post()
-  async addUser(@Body() userData: Partial<User>): Promise<Omit<User, 'password'>> {
-    const newUser = await this.usersService.addUser(userData);
-    const { password, ...userWithoutPassword } = newUser;
-    return userWithoutPassword;
+  async addUser(
+    @Body() userData: Partial<User>,
+  ): Promise<Omit<User, 'password'>> {
+    return this.usersService.addUser(userData);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -34,9 +47,7 @@ export class UsersController {
     @Param('id') id: number,
     @Body() updateData: Partial<User>,
   ): Promise<Omit<User, 'password'>> {
-    const updatedUser = await this.usersService.updateUser(id, updateData);
-    const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    return this.usersService.updateUser(id, updateData);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -45,14 +56,8 @@ export class UsersController {
     @Param('id') id: number,
     @Body() updateData: Partial<User>,
   ): Promise<Omit<User, 'password'>> {
-    const updatedUser = await this.usersService.updateUser(id, updateData);
-    const { password, ...userWithoutPassword } = updatedUser;
-    return userWithoutPassword;
+    return this.usersService.updateUser(id, updateData);
   }
-
-  
-
-  
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

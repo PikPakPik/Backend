@@ -7,10 +7,14 @@ export class InvoiceProduct {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Invoice, (invoice) => invoice.invoiceProducts, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Invoice, (invoice) => invoice.invoiceProducts, {
+    onDelete: 'CASCADE',
+  })
   invoice: Invoice;
 
-  @ManyToOne(() => Product, (product) => product.invoiceProducts, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Product, (product) => product.invoiceProducts, {
+    onDelete: 'CASCADE',
+  })
   product: Product;
 
   @Column()

@@ -1,23 +1,41 @@
-import { Controller, Post,Delete,Get,Put,Patch, Param, Body, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Delete,
+  Get,
+  Put,
+  Patch,
+  Param,
+  Body,
+  NotFoundException,
+} from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { Invoice } from './invoice.entity';
 
 @Controller('invoices')
 export class InvoicesController {
-  constructor(private readonly invoicesService: InvoicesService) { }
+  constructor(private readonly invoicesService: InvoicesService) {}
 
   @Post()
   async createInvoice(
-    @Body() body: { userId: number; products: { productId: number; quantity: number }[]; status: string },
+    @Body()
+    body: {
+      userId: number;
+      products: { productId: number; quantity: number }[];
+      status: string;
+    },
   ) {
-    return this.invoicesService.createInvoice(body.userId, body.products, body.status);
+    return this.invoicesService.createInvoice(
+      body.userId,
+      body.products,
+      body.status,
+    );
   }
 
   @Get('order/:orderNumber')
   async getInvoiceByOrderNumber(@Param('orderNumber') orderNumber: string) {
     return this.invoicesService.getInvoiceByOrderNumber(orderNumber);
   }
-
 
   @Get('user/:userId/products')
   async getUserPurchaseHistory(@Param('userId') userId: number) {
@@ -53,18 +71,15 @@ export class InvoicesController {
     return this.invoicesService.patchInvoice(id, updateData);
   }
 
+  // Get all invoices
+  @Get()
+  async getAllInvoices(): Promise<Invoice[]> {
+    return this.invoicesService.getAllInvoices();
+  }
 
-    // Get all invoices
-    @Get()
-    async getAllInvoices(): Promise<Invoice[]> {
-      return this.invoicesService.getAllInvoices();
-    }
-  
-    // Get a single invoice by ID
-    @Get(':id')
-    async getInvoiceById(@Param('id') id: number): Promise<Invoice> {
-      return this.invoicesService.getInvoiceById(id);
-    }
-  
-
+  // Get a single invoice by ID
+  @Get(':id')
+  async getInvoiceById(@Param('id') id: number): Promise<Invoice> {
+    return this.invoicesService.getInvoiceById(id);
+  }
 }

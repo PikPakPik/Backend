@@ -24,7 +24,12 @@ export class ReportsService {
     return this.invoiceRepository
       .createQueryBuilder('invoice')
       .innerJoin('invoice.user', 'user')
-      .select(['user.id', 'user.firstName', 'user.lastName', 'COUNT(invoice.id) AS invoiceCount'])
+      .select([
+        'user.id',
+        'user.firstName',
+        'user.lastName',
+        'COUNT(invoice.id) AS invoiceCount',
+      ])
       .groupBy('user.id')
       .orderBy('invoiceCount', 'DESC')
       .limit(10)
@@ -35,7 +40,9 @@ export class ReportsService {
   async getSalesTrends(): Promise<any[]> {
     return this.invoiceRepository
       .createQueryBuilder('invoice')
-      .select("DATE_TRUNC('day', invoice.date) AS day, SUM(invoice.amount) AS total")
+      .select(
+        "DATE_TRUNC('day', invoice.date) AS day, SUM(invoice.amount) AS total",
+      )
       .groupBy('day')
       .orderBy('day', 'ASC')
       .getRawMany();

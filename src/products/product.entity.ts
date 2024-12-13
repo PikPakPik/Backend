@@ -12,7 +12,7 @@ export class Product {
   @Column()
   brand: string;
 
-  @Column({ unique: true, type: 'text' }) // Use 'text' for unlimited length
+  @Column({ unique: true, type: 'text' })
   barcode: string;
 
   @Column({ type: 'decimal', default: 0 })

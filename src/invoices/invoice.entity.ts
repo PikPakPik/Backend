@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { User } from '../users/user.entity';
 import { InvoiceProduct } from './invoice-product.entity';
 
@@ -18,8 +24,9 @@ export class Invoice {
 
   @ManyToOne(() => User, (user) => user.invoices, { eager: true })
   user: User;
-  
 
-  @OneToMany(() => InvoiceProduct, (invoiceProduct) => invoiceProduct.invoice, { cascade: true })
+  @OneToMany(() => InvoiceProduct, (invoiceProduct) => invoiceProduct.invoice, {
+    cascade: true,
+  })
   invoiceProducts: InvoiceProduct[];
 }

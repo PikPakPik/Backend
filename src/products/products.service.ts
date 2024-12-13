@@ -24,17 +24,23 @@ export class ProductsService {
   }
 
   async addProduct(productData: Partial<Product>): Promise<Product> {
-    const existingProduct = await this.productRepository.findOneBy({ barcode: productData.barcode });
+    const existingProduct = await this.productRepository.findOneBy({
+      barcode: productData.barcode,
+    });
     if (existingProduct) {
-      throw new Error(`Product with barcode ${productData.barcode} already exists`);
+      throw new Error(
+        `Product with barcode ${productData.barcode} already exists`,
+      );
     }
-  
+
     const product = this.productRepository.create(productData);
     return this.productRepository.save(product);
   }
-  
 
-  async updateProduct(id: number, updateData: Partial<Product>): Promise<Product> {
+  async updateProduct(
+    id: number,
+    updateData: Partial<Product>,
+  ): Promise<Product> {
     const product = await this.getProductById(id);
     Object.assign(product, updateData);
     return this.productRepository.save(product);
@@ -60,18 +66,18 @@ export class ProductsService {
     if (existingProduct) {
       return existingProduct; // Return the existing product if found
     }
-  
+
     const OPENFOODFACTS_API_URL = `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`;
-  
+
     try {
       const response = await axios.get(OPENFOODFACTS_API_URL);
-  
+
       if (response.data.status !== 1) {
         throw new NotFoundException('Product not found in OpenFoodFacts API');
       }
-  
+
       const productData = response.data.product;
-  
+
       const product = this.productRepository.create({
         name: productData.product_name || 'Unknown Product',
         brand: productData.brands || 'Unknown Brand',
@@ -79,11 +85,12 @@ export class ProductsService {
         price: 0,
         stock: 0,
       });
-  
+
       return this.productRepository.save(product);
-    } catch (error) {
-      throw new NotFoundException('Failed to fetch product from OpenFoodFacts API');
+    } catch {
+      throw new NotFoundException(
+        'Failed to fetch product from OpenFoodFacts API',
+      );
     }
   }
-  
 }

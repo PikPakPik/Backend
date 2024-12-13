@@ -1,6 +1,16 @@
-import { Controller, Get, Post, Put, Delete,Patch, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../identity/jwt-auth.guard';
 import { Product } from './product.entity';
 
 @Controller('products')
@@ -56,7 +66,9 @@ export class ProductsController {
   // Get a product by barcode (fetch from OpenFoodFacts if not in database)
   @UseGuards(JwtAuthGuard)
   @Get('barcode/:barcode')
-  async getProductByBarcode(@Param('barcode') barcode: string): Promise<Product> {
+  async getProductByBarcode(
+    @Param('barcode') barcode: string,
+  ): Promise<Product> {
     return this.productsService.getProductByBarcode(barcode);
   }
 }

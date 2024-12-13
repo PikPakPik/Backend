@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -12,10 +16,8 @@ export class UsersService {
   ) {}
 
   // Get all users
-  async getAllUsers(): Promise<User[]> {
-    return this.userRepository.find({
-      select: ['id', 'firstName', 'lastName', 'email'], // Exclude passwords from the response
-    });
+  async getAllUsers(): Promise<Omit<User, 'password'>[]> {
+    return this.userRepository.find();
   }
 
   // Get a user by ID
@@ -29,7 +31,9 @@ export class UsersService {
 
   // Add a new user
   async addUser(userData: Partial<User>): Promise<User> {
-    const existingUser = await this.userRepository.findOneBy({ email: userData.email });
+    const existingUser = await this.userRepository.findOneBy({
+      email: userData.email,
+    });
     if (existingUser) {
       throw new BadRequestException('Email is already in use');
     }
